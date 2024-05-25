@@ -1,5 +1,6 @@
 package com.user.config;
 
+import com.user.exception.UserAccessDeniedException;
 import com.user.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,6 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+
+import static com.user.constant.AuthenticationErrorEnum.ACCESS_DENIED;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -38,8 +41,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+            if(request.getRequestURI().contains("/auth")) {
+                filterChain.doFilter(request, response);
+                return;
+            } else {
+                handlerExceptionResolver.resolveException(request, response, null, new UserAccessDeniedException(ACCESS_DENIED.getErrorCode(), ACCESS_DENIED.getErrorMessage()));
+            }
         }
         try {
             final String jwt = authHeader.substring(7);
@@ -57,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
-            handlerExceptionResolver.resolveException(request, response,null, exception);
+            handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }
 }

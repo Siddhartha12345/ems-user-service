@@ -2,6 +2,7 @@ package com.user.service;
 
 import com.user.entity.User;
 import com.user.repository.UserRepository;
+import com.user.request.LoadUserRequest;
 import com.user.request.LoginUserRequest;
 import com.user.request.RegisterUserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +38,15 @@ public class AuthenticationService {
         );
         return userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
+    }
+
+    public User loadUserByUsername(LoadUserRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        return user;
+    }
+
+    public User loadUserByUsername(String username) {
+        User user = userRepository.findByEmail(username).orElseThrow();
+        return user;
     }
 }
