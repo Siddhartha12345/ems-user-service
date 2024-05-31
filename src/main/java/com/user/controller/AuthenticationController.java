@@ -2,10 +2,12 @@ package com.user.controller;
 
 import com.user.entity.User;
 import com.user.request.LoginUserRequest;
+import com.user.request.RefreshTokenRequest;
 import com.user.request.RegisterUserRequest;
 import com.user.response.LoginResponse;
 import com.user.service.AuthenticationService;
 import com.user.service.JwtService;
+import com.user.service.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,9 @@ public class AuthenticationController {
     private JwtService jwtService;
 
     @Autowired
+    private RefreshTokenService refreshTokenService;
+
+    @Autowired
     private AuthenticationService authenticationService;
 
     @PostMapping("/signup")
@@ -31,12 +36,13 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserRequest request) {
-        User authenticatedUser = authenticationService.authenticate(request);
-        String jwtToken = jwtService.generateToken(authenticatedUser);
-        LoginResponse loginResponse = LoginResponse.builder()
-                .token(jwtToken)
-                .expiresIn(jwtService.getExpirationTime())
-                .build();
+        LoginResponse response = refreshTokenService.authenticateUser(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity<LoginResponse> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        LoginResponse loginResponse = refreshTokenService.generateNewAccessToken(refreshTokenRequest);
         return ResponseEntity.ok(loginResponse);
     }
 }

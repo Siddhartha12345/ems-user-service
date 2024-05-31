@@ -47,10 +47,6 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public long getExpirationTime() {
-        return jwtExpiration;
-    }
-
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
         return Jwts
                 .builder()

@@ -2,12 +2,13 @@ package com.user.service;
 
 import com.user.entity.User;
 import com.user.repository.UserRepository;
-import com.user.request.LoadUserRequest;
 import com.user.request.LoginUserRequest;
 import com.user.request.RegisterUserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,16 +34,14 @@ public class AuthenticationService {
     }
 
     public User authenticate(LoginUserRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword())
         );
-        return userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
-    }
-
-    public User loadUserByUsername(LoadUserRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        return user;
+        if(authentication.isAuthenticated()) {
+            return userRepository.findByEmail(request.getEmail()).orElseThrow();
+        } else {
+            throw new UsernameNotFoundException("Invalid user request!");
+        }
     }
 
     public User loadUserByUsername(String username) {

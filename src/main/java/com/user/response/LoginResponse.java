@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class LoginResponse {
 
-    private String token;
+    private String accessToken;
 
-    private long expiresIn;
+    private String refreshToken;
 }
