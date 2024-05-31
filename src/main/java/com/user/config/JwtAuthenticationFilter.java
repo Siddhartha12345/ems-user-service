@@ -43,10 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             if(request.getRequestURI().contains("/auth")) {
                 filterChain.doFilter(request, response);
-                return;
             } else {
                 handlerExceptionResolver.resolveException(request, response, null, new UserAccessDeniedException(ACCESS_DENIED.getErrorCode(), ACCESS_DENIED.getErrorMessage()));
             }
+            return;
         }
         try {
             final String jwt = authHeader.substring(7);

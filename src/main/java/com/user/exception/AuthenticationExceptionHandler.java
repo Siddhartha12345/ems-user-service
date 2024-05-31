@@ -44,7 +44,7 @@ public class AuthenticationExceptionHandler {
         } if(response == null) {
             response = JwtErrorResponse.builder()
                     .errorCode(AuthenticationErrorEnum.UNKNOWN_ERROR.getErrorCode())
-                    .errorMessage(AuthenticationErrorEnum.EXPIRED_JWT.getErrorMessage())
+                    .errorMessage(AuthenticationErrorEnum.UNKNOWN_ERROR.getErrorMessage())
                     .build();
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
