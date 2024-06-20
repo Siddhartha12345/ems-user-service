@@ -66,25 +66,21 @@ public class RefreshTokenService {
     }
 
     private boolean isRefreshTokenExpired(RefreshToken refreshToken) {
-        if (refreshToken.getExpiryDate().compareTo(LocalDateTime.now(ZoneId.of(AuthenticationConstant.TIMEZONE_IST))) < 0) {
-            return true;
-        }
-        return false;
+        return refreshToken.getExpiryDate().compareTo(LocalDateTime.now(ZoneId.of(AuthenticationConstant.TIMEZONE_IST))) < 0;
     }
 
     public LoginResponse generateNewAccessToken(RefreshTokenRequest refreshTokenRequest) {
-        // load userInfo by username
-        User userInfo = authenticationService.loadUserByUsername(refreshTokenRequest.getUsername());
-        // fetch refreshToken from userInfo
-        RefreshToken refreshToken = refreshTokenRepository.findRefreshTokenByUserInfo(userInfo).orElseThrow();
-        if (isRefreshTokenExpired(refreshToken)) {
+        // find RefreshToken entity by refreshToken
+        RefreshToken refreshTokenEntity = refreshTokenRepository.findByRefreshToken(refreshTokenRequest.getRefreshToken())
+                .orElseThrow();
+        if (isRefreshTokenExpired(refreshTokenEntity)) {
             // if token is expired
-            refreshTokenRepository.delete(refreshToken);
-            throw new RuntimeException(refreshToken.getRefreshToken() + " Refresh token is expired. Please make a new login!");
+            refreshTokenRepository.delete(refreshTokenEntity);
+            throw new RuntimeException(refreshTokenEntity.getRefreshToken() + " Refresh token is expired. Please make a new login!");
         }
-        refreshToken.setExpiryDate(LocalDateTime.now(ZoneId.of(AuthenticationConstant.TIMEZONE_IST)).plusMinutes(refreshTokenExpiration));
-        refreshTokenRepository.save(refreshToken);
-        String accessToken = jwtService.generateToken(userInfo);
-        return LoginResponse.builder().accessToken(accessToken).refreshToken(refreshToken.getRefreshToken()).build();
+        refreshTokenEntity.setExpiryDate(LocalDateTime.now(ZoneId.of(AuthenticationConstant.TIMEZONE_IST)).plusMinutes(refreshTokenExpiration));
+        refreshTokenRepository.save(refreshTokenEntity);
+        String accessToken = jwtService.generateToken(refreshTokenEntity.getUserInfo());
+        return LoginResponse.builder().accessToken(accessToken).refreshToken(refreshTokenEntity.getRefreshToken()).build();
     }
 }
