@@ -1,16 +1,14 @@
 package com.user.controller;
 
 import com.user.entity.User;
+import com.user.response.UserFullName;
 import com.user.service.AuthenticationService;
 import com.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -38,8 +36,10 @@ public class UserController {
     }
 
     @GetMapping("/load-user/{username}")
-    public ResponseEntity<User> loadUserByUsername(@PathVariable String username) {
+    public ResponseEntity<?> loadUserByUsername(@PathVariable String username,
+                                                @RequestParam(name = "nameOnly", required = false) boolean nameOnly) {
         User user = authenticationService.loadUserByUsername(username);
-        return ResponseEntity.ok(user);
+        return nameOnly ? ResponseEntity.ok(UserFullName.builder().fullName(user.getFullName()).build()) :
+                ResponseEntity.ok(user);
     }
 }
